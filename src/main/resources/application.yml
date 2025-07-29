@@ -22,5 +22,5 @@ springdoc:
 
 app:
   jwt:
-    secret: mySecretKey
+    secret: mySecretKeyThatIsLongEnoughForHMACAlgorithm256Bits
     expiration: 86400000  # 24小时（毫秒）
