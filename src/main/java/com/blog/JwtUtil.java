@@ -2,14 +2,21 @@ package com.blog;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final int jwtExpiration = 86400000; // 24小时
+    private final SecretKey key;
+    private final int jwtExpiration;
+    
+    public JwtUtil(JwtProperties jwtProperties) {
+        this.key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        this.jwtExpiration = jwtProperties.getExpiration();
+    }
     
     public String generateToken(String username) {
         return Jwts.builder()
