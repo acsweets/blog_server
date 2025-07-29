@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "启动博客服务",
+            "request": "launch",
+            "mainClass": "com.blog.BlogApplication",
+            "projectName": "blog-server",
+            "args": "",
+            "vmArgs": "",
+            "console": "internalConsole"
+        }
+    ]
+}

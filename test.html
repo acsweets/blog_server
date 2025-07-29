@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客API测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { padding: 8px 15px; margin: 5px; cursor: pointer; }
+        textarea, input { width: 100%; margin: 5px 0; padding: 8px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>博客API测试页面</h1>
+        
+        <div class="section">
+            <h3>用户登录</h3>
+            <input type="text" id="loginUsername" placeholder="用户名">
+            <input type="password" id="loginPassword" placeholder="密码">
+            <button onclick="login()">登录</button>
+            <button onclick="register()">注册</button>
+            <div id="authResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>获取所有文章</h3>
+            <button onclick="getAllArticles()">获取文章列表</button>
+            <div id="allArticles" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>创建文章</h3>
+            <input type="text" id="title" placeholder="文章标题">
+            <textarea id="content" rows="4" placeholder="文章内容"></textarea>
+            <input type="text" id="author" placeholder="作者">
+            <button onclick="createArticle()">创建文章</button>
+            <div id="createResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>获取单篇文章</h3>
+            <input type="number" id="getArticleId" placeholder="文章ID">
+            <button onclick="getArticle()">获取文章</button>
+            <div id="getResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>更新文章</h3>
+            <input type="number" id="updateId" placeholder="文章ID">
+            <input type="text" id="updateTitle" placeholder="新标题">
+            <textarea id="updateContent" rows="4" placeholder="新内容"></textarea>
+            <input type="text" id="updateAuthor" placeholder="新作者">
+            <button onclick="updateArticle()">更新文章</button>
+            <div id="updateResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>删除文章</h3>
+            <input type="number" id="deleteId" placeholder="文章ID">
+            <button onclick="deleteArticle()">删除文章</button>
+            <div id="deleteResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/articles';
+        const AUTH_BASE = 'http://localhost:8080/api/auth';
+        let authToken = localStorage.getItem('authToken');
+        
+        function getAuthHeaders() {
+            return authToken ? { 'Authorization': 'Bearer ' + authToken } : {};
+        }
+        
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${AUTH_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    document.getElementById('authResult').innerHTML = '登录成功！';
+                } else {
+                    const error = await response.text();
+                    document.getElementById('authResult').innerHTML = '错误: ' + error;
+                }
+            } catch (error) {
+                document.getElementById('authResult').innerHTML = '错误: ' + error.message;
+            }
+        }
+        
+        async function register() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${AUTH_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.text();
+                document.getElementById('authResult').innerHTML = result;
+            } catch (error) {
+                document.getElementById('authResult').innerHTML = '错误: ' + error.message;
+            }
+        }
+        
+        async function getAllArticles() {
+            try {
+                const response = await fetch(API_BASE);
+                const data = await response.json();
+                document.getElementById('allArticles').innerHTML = 
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('allArticles').innerHTML = '错误: ' + error.message;
+            }
+        }
+        
+        async function createArticle() {
+            const article = {
+                title: document.getElementById('title').value,
+                content: document.getElementById('content').value,
+                author: document.getElementById('author').value
+            };
+            
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify(article)
+                });
+                const data = await response.json();
+                document.getElementById('createResult').innerHTML = 
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('createResult').innerHTML = '错误: ' + error.message;
+            }
+        }
+        
+        async function getArticle() {
+            const id = document.getElementById('getArticleId').value;
+            try {
+                const response = await fetch(`${API_BASE}/${id}`);
+                const data = await response.json();
+                document.getElementById('getResult').innerHTML = 
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('getResult').innerHTML = '错误: ' + error.message;
+            }
+        }
+        
+        async function updateArticle() {
+            const id = document.getElementById('updateId').value;
+            const article = {
+                title: document.getElementById('updateTitle').value,
+                content: document.getElementById('updateContent').value,
+                author: document.getElementById('updateAuthor').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/${id}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify(article)
+                });
+                const data = await response.json();
+                document.getElementById('updateResult').innerHTML = 
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('updateResult').innerHTML = '错误: ' + error.message;
+            }
+        }
+        
+        async function deleteArticle() {
+            const id = document.getElementById('deleteId').value;
+            try {
+                const response = await fetch(`${API_BASE}/${id}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                document.getElementById('deleteResult').innerHTML = 
+                    response.ok ? '删除成功' : '删除失败';
+            } catch (error) {
+                document.getElementById('deleteResult').innerHTML = '错误: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

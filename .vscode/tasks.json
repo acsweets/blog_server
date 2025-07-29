@@ -1,0 +1,39 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "maven: spring-boot:run",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["spring-boot:run"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "编译Java文件",
+            "type": "shell",
+            "command": "javac",
+            "args": [
+                "-d", "target/classes",
+                "-cp", "src/main/java",
+                "src/main/java/com/blog/*.java"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        }
+    ]
+}
